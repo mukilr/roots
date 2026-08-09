@@ -4,6 +4,7 @@ import { ForceTreeGraph } from './components/ForceTreeGraph.jsx';
 import { PersonForm } from './components/PersonForm.jsx';
 import { RelationshipForm } from './components/RelationshipForm.jsx';
 import { PersonList } from './components/PersonList.jsx';
+import { Modal } from './components/Modal.jsx';
 
 export default function App() {
   const [people, setPeople] = useState([]);
@@ -12,6 +13,7 @@ export default function App() {
   const [focusNonce, setFocusNonce] = useState(0);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAddPerson, setShowAddPerson] = useState(false);
 
   const peopleById = useMemo(() => Object.fromEntries(people.map((p) => [p.id, p])), [people]);
   const selectedPerson = selectedId ? peopleById[selectedId] : null;
@@ -74,7 +76,6 @@ export default function App() {
       </header>
 
       <aside className="ft-sidebar">
-        <PersonForm onCreate={handleCreate} />
         <RelationshipForm people={people} onLink={handleLink} />
         <PersonList
           people={people}
@@ -101,6 +102,9 @@ export default function App() {
       </aside>
 
       <main className="ft-canvas">
+        <button className="ft-add-fab" onClick={() => setShowAddPerson(true)} title="Add person" aria-label="Add person">
+          +
+        </button>
         {loading ? (
           <div className="ft-empty">Loading…</div>
         ) : (
@@ -113,6 +117,12 @@ export default function App() {
           />
         )}
       </main>
+
+      {showAddPerson && (
+        <Modal title="Add person" onClose={() => setShowAddPerson(false)}>
+          <PersonForm onCreate={handleCreate} onSuccess={() => setShowAddPerson(false)} />
+        </Modal>
+      )}
     </div>
   );
 }

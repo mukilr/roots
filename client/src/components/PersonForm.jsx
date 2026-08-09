@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const EMPTY = { firstName: '', lastName: '', gender: 'male', birthDate: '', deathDate: '', notes: '' };
 
-export function PersonForm({ onCreate }) {
+export function PersonForm({ onCreate, onSuccess }) {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -25,6 +25,7 @@ export function PersonForm({ onCreate }) {
         notes: form.notes || null,
       });
       setForm(EMPTY);
+      onSuccess?.();
     } catch (err) {
       setError(err.message);
     } finally {

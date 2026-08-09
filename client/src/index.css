@@ -60,6 +60,91 @@ body {
     #05050f;
 }
 
+.ft-add-fab {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 5;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: radial-gradient(circle at 35% 30%, #fffceb, #ffd23f 55%, #c9860a 100%);
+  color: #2a1a00;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(255, 210, 63, 0.85), 0 0 30px rgba(255, 210, 63, 0.5);
+  animation: ft-fab-pulse 2.5s ease-in-out infinite;
+  transition: transform 0.15s ease;
+}
+
+.ft-add-fab:hover {
+  transform: scale(1.08);
+}
+
+@keyframes ft-fab-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(255, 210, 63, 0.85), 0 0 30px rgba(255, 210, 63, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 210, 63, 1), 0 0 46px rgba(255, 210, 63, 0.75);
+  }
+}
+
+.ft-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 3, 15, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.ft-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  width: 340px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.ft-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ft-modal-header h2 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.ft-modal-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  line-height: 1;
+}
+
+.ft-modal .ft-form h3 {
+  display: none;
+}
+
 .ft-empty {
   padding: 40px;
   color: #9a97c9;
