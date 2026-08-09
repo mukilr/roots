@@ -15,10 +15,10 @@ peopleRouter.get('/:id', (req, res) => {
 
 peopleRouter.post('/', (req, res) => {
   const { firstName, gender } = req.body;
-  if (!firstName || !gender) {
-    return res.status(400).json({ error: 'firstName and gender are required' });
+  if (!firstName) {
+    return res.status(400).json({ error: 'firstName is required' });
   }
-  if (!['male', 'female'].includes(gender)) {
+  if (gender && !['male', 'female'].includes(gender)) {
     return res.status(400).json({ error: "gender must be 'male' or 'female'" });
   }
   const person = store.createPerson(req.body);

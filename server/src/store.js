@@ -44,7 +44,7 @@ export function createPerson(fields) {
     id,
     firstName: fields.firstName,
     lastName: fields.lastName || '',
-    gender: fields.gender,
+    gender: fields.gender || null,
     birthDate: fields.birthDate || null,
     deathDate: fields.deathDate || null,
     photoUrl: fields.photoUrl || null,

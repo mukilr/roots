@@ -156,7 +156,7 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
       .attr(
         'class',
         (d) =>
-          `ft-graph-node ${d.gender}${d.generation === 0 ? ' is-ancestor' : ''}${d.pending ? ' is-pending' : ''}`
+          `ft-graph-node ${d.gender || 'unspecified'}${d.generation === 0 ? ' is-ancestor' : ''}${d.pending ? ' is-pending' : ''}`
       )
       .on('click', (event, d) => {
         event.stopPropagation();

@@ -38,7 +38,7 @@ export function PersonDetailModal({ person, peopleById, otherPeople, onClose, on
   return (
     <Modal title={label(person)} onClose={onClose}>
       <div className="ft-details">
-        <p>Gender: {person.gender}</p>
+        <p>Gender: {person.gender || 'Unspecified'}</p>
         {person.birthDate && <p>Born: {person.birthDate}</p>}
         {person.deathDate && <p>Died: {person.deathDate}</p>}
         {person.notes && <p>{person.notes}</p>}

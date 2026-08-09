@@ -32,7 +32,7 @@ body {
 }
 
 .ft-title {
-  position: absolute;
+  position: fixed;
   top: 20px;
   left: 24px;
   z-index: 5;
@@ -45,7 +45,7 @@ body {
 }
 
 .ft-canvas-actions {
-  position: absolute;
+  position: fixed;
   top: 20px;
   right: 20px;
   z-index: 5;
@@ -180,6 +180,34 @@ body {
   border-radius: 4px;
   font-size: 13px;
   font-family: inherit;
+}
+
+.ft-date-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ft-date-field input {
+  flex: 1;
+  min-width: 0;
+}
+
+.ft-unset-btn {
+  flex: none;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 4px 7px;
+  cursor: pointer;
+  color: #666;
+}
+
+.ft-unset-btn:hover {
+  background: #f0f0f0;
 }
 
 .ft-form button {
@@ -351,6 +379,13 @@ body {
 }
 .ft-graph-node.female .ft-graph-node-glow {
   fill: #ff6fb0;
+}
+
+.ft-graph-node.unspecified .ft-graph-node-core {
+  fill: #e4e4f2;
+}
+.ft-graph-node.unspecified .ft-graph-node-glow {
+  fill: #ffffff;
 }
 
 .ft-graph-node.is-ancestor .ft-graph-node-core {

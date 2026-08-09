@@ -35,6 +35,7 @@ export default function App() {
     const person = await api.createPerson(data);
     await refresh();
     setSelectedId(person.id);
+    return person;
   };
 
   const handleLink = async (type, person1Id, person2Id) => {
@@ -98,7 +99,13 @@ export default function App() {
 
       {showAddPerson && (
         <Modal title="Add person" onClose={() => setShowAddPerson(false)}>
-          <PersonForm onCreate={handleCreate} onSuccess={() => setShowAddPerson(false)} showHeading={false} />
+          <PersonForm
+            people={people}
+            onCreate={handleCreate}
+            onLink={handleLink}
+            onSuccess={() => setShowAddPerson(false)}
+            showHeading={false}
+          />
         </Modal>
       )}
 
