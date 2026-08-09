@@ -5,6 +5,19 @@ const NODE_RADIUS = 26;
 const LEVEL_HEIGHT = 150;
 const MARGIN = 80;
 
+// A 5-pointed star polygon, centered on (0, 0), for the person nodes —
+// so they read as stars rather than plain circles ("planets").
+function starPoints(outerRadius, innerRadius, spikes = 5) {
+  const points = [];
+  const step = Math.PI / spikes;
+  for (let i = 0; i < spikes * 2; i++) {
+    const r = i % 2 === 0 ? outerRadius : innerRadius;
+    const angle = i * step - Math.PI / 2;
+    points.push(`${(r * Math.cos(angle)).toFixed(2)},${(r * Math.sin(angle)).toFixed(2)}`);
+  }
+  return points.join(' ');
+}
+
 // A person's generation is derived from their parents (max(parent gens) + 1)
 // or, lacking that, inherited from a spouse whose generation is already
 // known — someone who married in shouldn't default to being an "ancestor"
@@ -163,15 +176,19 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
         onSelect(d.id);
       });
 
-    nodeSel
-      .append('circle')
-      .attr('class', 'ft-graph-node-glow')
-      .attr('r', NODE_RADIUS * 1.8);
+    // Invisible circle so the whole disc (including the star's concave
+    // notches) stays clickable/draggable, not just the painted points.
+    nodeSel.append('circle').attr('class', 'ft-graph-node-hit').attr('r', NODE_RADIUS);
 
     nodeSel
-      .append('circle')
+      .append('polygon')
+      .attr('class', 'ft-graph-node-glow')
+      .attr('points', starPoints(NODE_RADIUS * 1.9, NODE_RADIUS * 0.85));
+
+    nodeSel
+      .append('polygon')
       .attr('class', 'ft-graph-node-core')
-      .attr('r', NODE_RADIUS)
+      .attr('points', starPoints(NODE_RADIUS, NODE_RADIUS * 0.45))
       .attr('style', () => `animation-delay: ${(Math.random() * 4).toFixed(2)}s`);
 
     nodeSel

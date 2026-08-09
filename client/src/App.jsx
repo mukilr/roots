@@ -103,8 +103,10 @@ export default function App() {
             +
           </button>
           <button className="ft-download-fab" onClick={handleExport} title="Download JSON" aria-label="Download JSON">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 1.5 L14.4 9.2 L22.5 9.5 L15.9 14.3 L18.4 22 L12 17.1 L5.6 22 L8.1 14.3 L1.5 9.5 L9.6 9.2 Z" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3v12" />
+              <path d="M7 10l5 5 5-5" />
+              <path d="M4 21h16" />
             </svg>
           </button>
         </div>
