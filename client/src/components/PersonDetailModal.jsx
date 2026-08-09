@@ -42,7 +42,12 @@ export function PersonDetailModal({ person, peopleById, otherPeople, onClose, on
         {person.birthDate && <p>Born: {person.birthDate}</p>}
         {person.deathDate && <p>Died: {person.deathDate}</p>}
         {person.notes && <p>{person.notes}</p>}
-        {person.pending && <p className="ft-pending-note">⏳ Not yet emailed — saved in this browser only.</p>}
+        {person.pending && (
+          <p className="ft-pending-note">
+            <span className="ft-pending-dot-inline" />
+            Not yet emailed — saved in this browser only.
+          </p>
+        )}
 
         {relGroups.map(({ title, ids, unlink }) => (
           <div key={title} className="ft-rel-group">

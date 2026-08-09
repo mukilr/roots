@@ -197,13 +197,13 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
       .attr('class', 'ft-graph-node-core')
       .attr('r', NODE_RADIUS * 0.36);
 
-    nodeSel
-      .append('text')
+    // A pulsing "ping" dot marks unsaved nodes — no emoji, just motion.
+    const pendingBadge = nodeSel
+      .append('g')
       .attr('class', 'ft-graph-pending-badge')
-      .attr('text-anchor', 'middle')
-      .attr('x', NODE_RADIUS - 6)
-      .attr('y', -NODE_RADIUS + 10)
-      .text('⏳');
+      .attr('transform', `translate(${NODE_RADIUS - 4}, ${-NODE_RADIUS + 6})`);
+    pendingBadge.append('circle').attr('class', 'ft-pending-ping').attr('r', 5);
+    pendingBadge.append('circle').attr('class', 'ft-pending-dot').attr('r', 4);
 
     nodeSel
       .append('text')
