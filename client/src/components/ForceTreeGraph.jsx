@@ -90,10 +90,8 @@ function buildGraph(people) {
   return { nodes, links, maxGeneration };
 }
 
-export function ForceTreeGraph({ people, selectedId, onSelect, focusId, focusNonce }) {
+export function ForceTreeGraph({ people, selectedId, onSelect }) {
   const containerRef = useRef(null);
-  const zoomBehaviorRef = useRef(null);
-  const svgRef = useRef(null);
   const nodeSelById = useRef(new Map());
 
   useEffect(() => {
@@ -115,7 +113,6 @@ export function ForceTreeGraph({ people, selectedId, onSelect, focusId, focusNon
       .attr('width', '100%')
       .attr('height', '100%')
       .attr('viewBox', [0, 0, width, height]);
-    svgRef.current = svg;
 
     // A fixed starfield backdrop, outside the zoom layer, so the sky stays
     // put while the tree itself pans/zooms above it — like a distant galaxy.
@@ -138,7 +135,6 @@ export function ForceTreeGraph({ people, selectedId, onSelect, focusId, focusNon
       .scaleExtent([0.3, 2.5])
       .on('zoom', (event) => zoomLayer.attr('transform', event.transform));
     svg.call(zoom);
-    zoomBehaviorRef.current = zoom;
 
     // Start already panned/zoomed out a touch so a fresh tree isn't cropped.
     svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(0.9));
@@ -263,21 +259,6 @@ export function ForceTreeGraph({ people, selectedId, onSelect, focusId, focusNon
       d3.select(el).classed('is-selected', id === selectedId);
     }
   }, [selectedId, people]);
-
-  useEffect(() => {
-    if (!focusId || !svgRef.current || !zoomBehaviorRef.current) return;
-    const el = nodeSelById.current.get(focusId);
-    if (!el) return;
-    const d = d3.select(el).datum();
-    const svg = svgRef.current;
-    const node = svg.node();
-    const { width, height } = node.getBoundingClientRect();
-    svg
-      .transition()
-      .duration(500)
-      .call(zoomBehaviorRef.current.transform, d3.zoomIdentity.translate(width / 2 - d.x, height / 2 - d.y).scale(1));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusId, focusNonce]);
 
   if (people.length === 0) {
     return <div className="ft-empty">Add a person to get started.</div>;

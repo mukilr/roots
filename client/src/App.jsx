@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from './api.js';
 import { ForceTreeGraph } from './components/ForceTreeGraph.jsx';
 import { PersonForm } from './components/PersonForm.jsx';
-import { PersonList } from './components/PersonList.jsx';
 import { Modal } from './components/Modal.jsx';
 import { PersonDetailModal } from './components/PersonDetailModal.jsx';
 
@@ -10,8 +9,6 @@ export default function App() {
   const [people, setPeople] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [detailPersonId, setDetailPersonId] = useState(null);
-  const [focusId, setFocusId] = useState(null);
-  const [focusNonce, setFocusNonce] = useState(0);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddPerson, setShowAddPerson] = useState(false);
@@ -69,51 +66,33 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  // Clicking a star (or a name in the sidebar) opens that person's detail —
-  // relationships are managed from there now, not a separate sidebar form.
+  // Clicking a star opens that person's detail — relationships are managed
+  // from there, via PersonDetailModal.
   const handleSelect = (id) => {
     setSelectedId(id);
     setDetailPersonId(id);
   };
 
-  const handleFocus = (id) => {
-    setSelectedId(id);
-    setFocusId(id);
-    setFocusNonce((n) => n + 1);
-  };
-
   return (
     <div className="ft-app">
-      <header className="ft-header">
-        <h1>Roots</h1>
-        <button onClick={handleExport}>Export JSON</button>
-      </header>
-
-      <aside className="ft-sidebar">
-        <PersonList
-          people={people}
-          selectedId={selectedId}
-          onFocus={handleFocus}
-          onSelect={handleSelect}
-          onDelete={handleDelete}
-        />
-        {error && <div className="ft-error">{error}</div>}
-      </aside>
-
       <main className="ft-canvas">
-        <button className="ft-add-fab" onClick={() => setShowAddPerson(true)} title="Add person" aria-label="Add person">
-          +
-        </button>
+        <h1 className="ft-title">Roots</h1>
+
+        <div className="ft-canvas-actions">
+          <button className="ft-add-fab" onClick={() => setShowAddPerson(true)} title="Add person" aria-label="Add person">
+            +
+          </button>
+          <button className="ft-download-fab" onClick={handleExport} title="Download JSON" aria-label="Download JSON">
+            ⬇
+          </button>
+        </div>
+
+        {error && <div className="ft-error-banner">{error}</div>}
+
         {loading ? (
           <div className="ft-empty">Loading…</div>
         ) : (
-          <ForceTreeGraph
-            people={people}
-            selectedId={selectedId}
-            onSelect={handleSelect}
-            focusId={focusId}
-            focusNonce={focusNonce}
-          />
+          <ForceTreeGraph people={people} selectedId={selectedId} onSelect={handleSelect} />
         )}
       </main>
 
