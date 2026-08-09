@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.DS_Store
+
+# Personal family data shouldn't live in git history.
+server/data/family-tree.json
+!server/data/.gitkeep
