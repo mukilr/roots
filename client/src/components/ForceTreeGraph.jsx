@@ -185,21 +185,10 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
     nodeSel
       .append('text')
       .attr('class', 'ft-graph-name')
-      .attr('text-anchor', 'middle')
-      .attr('dy', NODE_RADIUS + 16)
-      .text((d) => `${d.firstName} ${d.lastName}`.trim() || 'Unnamed');
-
-    nodeSel
-      .append('text')
-      .attr('class', 'ft-graph-years')
-      .attr('text-anchor', 'middle')
-      .attr('dy', NODE_RADIUS + 30)
-      .text((d) => {
-        const born = d.birthDate?.slice(0, 4);
-        const died = d.deathDate?.slice(0, 4);
-        if (!born && !died) return '';
-        return died ? `${born ?? '?'}–${died}` : `b. ${born}`;
-      });
+      .attr('text-anchor', 'start')
+      .attr('x', NODE_RADIUS + 10)
+      .attr('dy', '0.35em')
+      .text((d) => d.firstName || 'Unnamed');
 
     nodeSelById.current = new Map(nodes.map((d, i) => [d.id, nodeSel.nodes()[i]]));
 
@@ -237,7 +226,7 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
           .strength((d) => (d.type === 'spouse' ? 0.8 : 0.25))
       )
       .force('charge', d3.forceManyBody().strength(-260))
-      .force('collide', d3.forceCollide(NODE_RADIUS + 26))
+      .force('collide', d3.forceCollide(NODE_RADIUS + 40))
       .force('x', d3.forceX(width / 2).strength(0.03))
       .force('y', d3.forceY(targetY).strength(1))
       .on('tick', () => {

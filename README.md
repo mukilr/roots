@@ -20,10 +20,12 @@ browser — there's no live backend to talk to once deployed.
 - `client/` — the React (Vite) app. On a fresh visit, it fetches the bundled
   `data/family-tree.json` once and seeds `localStorage` with it; every edit
   after that reads/writes `localStorage` directly, since a static site has no
-  server to persist changes to. Each change also opens a pre-filled email
-  draft to `mukilr@gmail.com` (via `mailto:`) with the updated JSON, so
-  changes made by visitors can be reviewed and folded back into the published
-  seed at your leisure. People with unsynced local edits show a ⏳ badge.
+  server to persist changes to. People with unsynced local edits show a ⏳
+  badge, and stay that way until you hit the Save button (top right), which
+  opens a pre-filled email draft to `mukilr@gmail.com` (via `mailto:`) with
+  the updated JSON and clears the badges — so edits can be reviewed and
+  folded back into the published seed at your leisure, in one batch rather
+  than an email per keystroke.
 
 ## Running locally (full CRUD, via the Express API)
 

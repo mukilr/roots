@@ -48,13 +48,8 @@ function notifyChange(data) {
     link.href = `mailto:${NOTIFY_EMAIL}?subject=${subject}&body=${body}`;
     link.click();
   } catch {
-    // Best-effort only — never block a local save on this.
+    // Best-effort only — never block a save on this.
   }
-}
-
-function writeAllAndNotify(data) {
-  writeAll(data);
-  notifyChange(data);
 }
 
 let seedPromise = null;
@@ -78,6 +73,18 @@ export function getAllPeople() {
   return Object.values(data.people);
 }
 
+// Sends the current state as an email (see notifyChange) and, on success,
+// clears every pending flag — the visitor explicitly chose to "save" now,
+// rather than us pushing an email draft on every single edit.
+export function saveAndNotify() {
+  const data = readAll() ?? { nextId: 1, people: {} };
+  notifyChange(data);
+  for (const person of Object.values(data.people)) {
+    person.pending = false;
+  }
+  writeAll(data);
+}
+
 export function createPerson(fields) {
   const data = readAll();
   const id = String(data.nextId++);
@@ -96,7 +103,7 @@ export function createPerson(fields) {
     pending: true,
   };
   data.people[id] = person;
-  writeAllAndNotify(data);
+  writeAll(data);
   return person;
 }
 
@@ -116,7 +123,7 @@ export function updatePerson(id, fields) {
     pending: true,
   };
   data.people[id] = updated;
-  writeAllAndNotify(data);
+  writeAll(data);
   return updated;
 }
 
@@ -131,7 +138,7 @@ export function deletePerson(id) {
     person.spouseIds = person.spouseIds.filter((sid) => sid !== id);
   }
   delete data.people[id];
-  writeAllAndNotify(data);
+  writeAll(data);
 }
 
 function assertExists(data, id) {
@@ -153,7 +160,7 @@ export function addParentChild(parentId, childId) {
   if (!parent.childrenIds.includes(childId)) parent.childrenIds.push(childId);
   parent.pending = true;
   child.pending = true;
-  writeAllAndNotify(data);
+  writeAll(data);
 }
 
 export function removeParentChild(parentId, childId) {
@@ -164,7 +171,7 @@ export function removeParentChild(parentId, childId) {
   data.people[childId].parentIds = data.people[childId].parentIds.filter((id) => id !== parentId);
   data.people[parentId].pending = true;
   data.people[childId].pending = true;
-  writeAllAndNotify(data);
+  writeAll(data);
 }
 
 export function addSpouses(person1Id, person2Id) {
@@ -180,7 +187,7 @@ export function addSpouses(person1Id, person2Id) {
   if (!p2.spouseIds.includes(person1Id)) p2.spouseIds.push(person1Id);
   p1.pending = true;
   p2.pending = true;
-  writeAllAndNotify(data);
+  writeAll(data);
 }
 
 export function removeSpouses(person1Id, person2Id) {
@@ -191,7 +198,7 @@ export function removeSpouses(person1Id, person2Id) {
   data.people[person2Id].spouseIds = data.people[person2Id].spouseIds.filter((id) => id !== person1Id);
   data.people[person1Id].pending = true;
   data.people[person2Id].pending = true;
-  writeAllAndNotify(data);
+  writeAll(data);
 }
 
 export function exportRaw() {

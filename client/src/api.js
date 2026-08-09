@@ -28,4 +28,6 @@ export const api = {
     }),
 
   exportData: () => withSeed(() => store.exportRaw()),
+
+  save: () => withSeed(() => store.saveAndNotify()),
 };

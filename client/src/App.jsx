@@ -15,6 +15,7 @@ export default function App() {
 
   const peopleById = useMemo(() => Object.fromEntries(people.map((p) => [p.id, p])), [people]);
   const detailPerson = detailPersonId ? peopleById[detailPersonId] : null;
+  const hasPending = people.some((p) => p.pending);
 
   const refresh = useCallback(async () => {
     try {
@@ -74,17 +75,37 @@ export default function App() {
     setDetailPersonId(id);
   };
 
+  const handleSave = async () => {
+    await api.save();
+    await refresh();
+  };
+
   return (
     <div className="ft-app">
       <main className="ft-canvas">
         <h1 className="ft-title">Roots</h1>
 
         <div className="ft-canvas-actions">
+          <button
+            className="ft-save-fab"
+            onClick={handleSave}
+            disabled={!hasPending}
+            title={hasPending ? 'Save — email the update to mukilr' : 'No unsaved changes'}
+            aria-label="Save and email update"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 4h13l3 3v13H4z" />
+              <path d="M8 4v6h8V4" />
+              <path d="M8 20v-6h8v6" />
+            </svg>
+          </button>
           <button className="ft-add-fab" onClick={() => setShowAddPerson(true)} title="Add person" aria-label="Add person">
             +
           </button>
           <button className="ft-download-fab" onClick={handleExport} title="Download JSON" aria-label="Download JSON">
-            ⬇
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 1.5 L14.4 9.2 L22.5 9.5 L15.9 14.3 L18.4 22 L12 17.1 L5.6 22 L8.1 14.3 L1.5 9.5 L9.6 9.2 Z" />
+            </svg>
           </button>
         </div>
 

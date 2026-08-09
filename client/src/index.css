@@ -54,8 +54,7 @@ body {
   gap: 12px;
 }
 
-.ft-add-fab,
-.ft-download-fab {
+.ft-add-fab {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -69,23 +68,72 @@ body {
   color: #ffffff;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(4px);
+  font-size: 20px;
+  font-weight: 300;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
-.ft-add-fab:hover,
-.ft-download-fab:hover {
+.ft-add-fab:hover {
   transform: scale(1.08);
   background: rgba(255, 255, 255, 0.12);
   box-shadow: 0 0 14px rgba(255, 255, 255, 0.45);
 }
 
-.ft-add-fab {
-  font-size: 20px;
-  font-weight: 300;
+.ft-save-fab {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, opacity 0.15s ease;
 }
 
+.ft-save-fab svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ft-save-fab:hover:not(:disabled) {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.45);
+}
+
+.ft-save-fab:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* A little glowing star, not a plain circle "planet" button. */
 .ft-download-fab {
-  font-size: 15px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.75)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.4));
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.ft-download-fab:hover {
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.6));
+}
+
+.ft-download-fab svg {
+  width: 22px;
+  height: 22px;
 }
 
 .ft-error-banner {
@@ -440,24 +488,11 @@ body {
 }
 
 .ft-graph-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  fill: #f3f2ff;
-  paint-order: stroke;
-  stroke: rgba(3, 3, 15, 0.85);
-  stroke-width: 3px;
-  stroke-linejoin: round;
+  fill: #ffffff;
   pointer-events: none;
-}
-
-.ft-graph-years {
-  font-size: 10px;
-  fill: #b9b8e0;
-  paint-order: stroke;
-  stroke: rgba(3, 3, 15, 0.85);
-  stroke-width: 3px;
-  stroke-linejoin: round;
-  pointer-events: none;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 8px rgba(180, 160, 255, 0.7));
 }
 
 .ft-graph-pending-badge {
