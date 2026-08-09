@@ -92,6 +92,9 @@ export default function App() {
             {selectedPerson.birthDate && <p>Born: {selectedPerson.birthDate}</p>}
             {selectedPerson.deathDate && <p>Died: {selectedPerson.deathDate}</p>}
             {selectedPerson.notes && <p>{selectedPerson.notes}</p>}
+            {selectedPerson.pending && (
+              <p className="ft-pending-note">⏳ Not yet emailed — saved in this browser only.</p>
+            )}
           </div>
         )}
         {error && <div className="ft-error">{error}</div>}

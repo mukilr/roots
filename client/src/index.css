@@ -53,12 +53,16 @@ body {
   grid-area: canvas;
   position: relative;
   overflow: hidden;
-  background: #fafafa;
+  background:
+    radial-gradient(ellipse at 25% 15%, rgba(107, 70, 193, 0.35), transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(45, 108, 223, 0.25), transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(180, 60, 130, 0.18), transparent 60%),
+    #05050f;
 }
 
 .ft-empty {
   padding: 40px;
-  color: #888;
+  color: #9a97c9;
   font-size: 14px;
 }
 
@@ -190,13 +194,29 @@ body {
   cursor: grab;
 }
 
+.ft-star {
+  fill: #ffffff;
+  pointer-events: none;
+  animation: ft-star-twinkle 4s ease-in-out infinite;
+}
+
+@keyframes ft-star-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .ft-graph-link {
-  stroke: #b6b6b6;
-  stroke-width: 2px;
+  stroke: rgba(180, 190, 255, 0.28);
+  stroke-width: 1.5px;
 }
 
 .ft-graph-link.spouse {
-  stroke: #d98ab0;
+  stroke: rgba(255, 160, 210, 0.4);
   stroke-dasharray: 4 3;
 }
 
@@ -204,38 +224,111 @@ body {
   cursor: pointer;
 }
 
-.ft-graph-node circle {
-  stroke: rgba(0, 0, 0, 0.2);
-  stroke-width: 2px;
+.ft-graph-node-glow {
+  stroke: none;
+  opacity: 0.35;
+  filter: blur(6px);
+  pointer-events: none;
 }
 
-.ft-graph-node.male circle {
-  fill: #dbeeff;
+.ft-graph-node-core {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 1px;
+  animation: ft-node-twinkle 3.2s ease-in-out infinite;
 }
 
-.ft-graph-node.female circle {
-  fill: #ffe0ef;
+@keyframes ft-node-twinkle {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.25);
+  }
 }
 
-.ft-graph-node.is-ancestor circle {
-  stroke: #2d6cdf;
-  stroke-width: 3px;
+.ft-graph-node.male .ft-graph-node-core {
+  fill: #bfe0ff;
+}
+.ft-graph-node.male .ft-graph-node-glow {
+  fill: #4f9dff;
 }
 
-.ft-graph-node.is-selected circle {
-  stroke: #1a1a1a;
-  stroke-width: 3px;
+.ft-graph-node.female .ft-graph-node-core {
+  fill: #ffd3ec;
+}
+.ft-graph-node.female .ft-graph-node-glow {
+  fill: #ff6fb0;
+}
+
+.ft-graph-node.is-ancestor .ft-graph-node-core {
+  fill: #fff3c4;
+  stroke: #ffe27a;
+  stroke-width: 1.5px;
+}
+.ft-graph-node.is-ancestor .ft-graph-node-glow {
+  fill: #ffd23f;
+  opacity: 0.5;
+}
+
+.ft-graph-node.is-selected .ft-graph-node-core {
+  stroke: #ffffff;
+  stroke-width: 2.5px;
+}
+.ft-graph-node.is-selected .ft-graph-node-glow {
+  fill: #ffffff;
+  opacity: 0.55;
 }
 
 .ft-graph-name {
   font-size: 12px;
   font-weight: 600;
-  fill: #1a1a1a;
+  fill: #f3f2ff;
+  paint-order: stroke;
+  stroke: rgba(3, 3, 15, 0.85);
+  stroke-width: 3px;
+  stroke-linejoin: round;
   pointer-events: none;
 }
 
 .ft-graph-years {
   font-size: 10px;
-  fill: #666;
+  fill: #b9b8e0;
+  paint-order: stroke;
+  stroke: rgba(3, 3, 15, 0.85);
+  stroke-width: 3px;
+  stroke-linejoin: round;
   pointer-events: none;
+}
+
+.ft-graph-pending-badge {
+  font-size: 14px;
+  display: none;
+  pointer-events: none;
+}
+
+.ft-graph-node.is-pending .ft-graph-pending-badge {
+  display: block;
+  animation: ft-pending-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ft-pending-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.ft-pending-badge {
+  display: inline-block;
+  margin-left: 4px;
+  animation: ft-pending-pulse 1.4s ease-in-out infinite;
+}
+
+.ft-pending-note {
+  color: #a06b00;
+  font-size: 12px;
 }

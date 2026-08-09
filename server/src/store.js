@@ -4,14 +4,16 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Single hierarchical JSON file is the source of truth. Each person record
-// is a self-contained row (parentIds/childrenIds/spouseIds are the only
-// links) so it maps 1:1 onto tables in a future real database:
-// people(id, first_name, ...) + person_relationships(person_id, related_id, type).
-export const DATA_FILE = path.join(__dirname, '..', 'data', 'family-tree.json');
+// Single hierarchical JSON file is the source of truth, kept in one folder
+// shared with the client (client/public/data/). Each person record is a
+// self-contained row (parentIds/childrenIds/spouseIds are the only links)
+// so it maps 1:1 onto tables in a future real database: people(id,
+// first_name, ...) + person_relationships(person_id, related_id, type).
+// The client also fetches this same file as its static seed and bundles it
+// into the published build, so this server is only needed locally, for
+// preparing/editing that seed before you publish it.
+export const DATA_FILE = path.join(__dirname, '..', '..', 'client', 'public', 'data', 'family-tree.json');
 
-// The data file holds personal family data and is gitignored, so a fresh
-// clone won't have one yet — bootstrap it on first run.
 if (!fs.existsSync(DATA_FILE)) {
   fs.writeFileSync(DATA_FILE, JSON.stringify({ nextId: 1, people: {} }, null, 2));
 }

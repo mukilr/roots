@@ -69,6 +69,7 @@ function buildGraph(people) {
     gender: p.gender,
     birthDate: p.birthDate,
     deathDate: p.deathDate,
+    pending: Boolean(p.pending),
     generation: generation.get(p.id),
   }));
 
@@ -116,6 +117,20 @@ export function ForceTreeGraph({ people, selectedId, onSelect, focusId, focusNon
       .attr('viewBox', [0, 0, width, height]);
     svgRef.current = svg;
 
+    // A fixed starfield backdrop, outside the zoom layer, so the sky stays
+    // put while the tree itself pans/zooms above it — like a distant galaxy.
+    const starLayer = svg.append('g').attr('class', 'ft-starfield');
+    const STAR_COUNT = 160;
+    for (let i = 0; i < STAR_COUNT; i++) {
+      starLayer
+        .append('circle')
+        .attr('class', 'ft-star')
+        .attr('cx', Math.random() * width)
+        .attr('cy', Math.random() * height)
+        .attr('r', Math.random() * 1.2 + 0.3)
+        .attr('style', `animation-delay: ${(Math.random() * 5).toFixed(2)}s`);
+    }
+
     const zoomLayer = svg.append('g').attr('class', 'zoom-layer');
 
     const zoom = d3
@@ -142,13 +157,34 @@ export function ForceTreeGraph({ people, selectedId, onSelect, focusId, focusNon
       .selectAll('g')
       .data(nodes, (d) => d.id)
       .join('g')
-      .attr('class', (d) => `ft-graph-node ${d.gender}${d.generation === 0 ? ' is-ancestor' : ''}`)
+      .attr(
+        'class',
+        (d) =>
+          `ft-graph-node ${d.gender}${d.generation === 0 ? ' is-ancestor' : ''}${d.pending ? ' is-pending' : ''}`
+      )
       .on('click', (event, d) => {
         event.stopPropagation();
         onSelect(d.id);
       });
 
-    nodeSel.append('circle').attr('r', NODE_RADIUS);
+    nodeSel
+      .append('circle')
+      .attr('class', 'ft-graph-node-glow')
+      .attr('r', NODE_RADIUS * 1.8);
+
+    nodeSel
+      .append('circle')
+      .attr('class', 'ft-graph-node-core')
+      .attr('r', NODE_RADIUS)
+      .attr('style', () => `animation-delay: ${(Math.random() * 4).toFixed(2)}s`);
+
+    nodeSel
+      .append('text')
+      .attr('class', 'ft-graph-pending-badge')
+      .attr('text-anchor', 'middle')
+      .attr('x', NODE_RADIUS - 6)
+      .attr('y', -NODE_RADIUS + 10)
+      .text('⏳');
 
     nodeSel
       .append('text')

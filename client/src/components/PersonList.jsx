@@ -9,6 +9,11 @@ export function PersonList({ people, selectedId, onFocus, onSelect, onDelete }) 
           <li key={p.id} className={p.id === selectedId ? 'is-selected' : ''}>
             <button className="ft-list-name" onClick={() => onSelect(p.id)}>
               {label(p)}
+              {p.pending && (
+                <span className="ft-pending-badge" title="Not yet emailed/synced">
+                  ⏳
+                </span>
+              )}
             </button>
             <div className="ft-list-actions">
               <button title="Center the tree on this person" onClick={() => onFocus(p.id)}>
