@@ -17,22 +17,66 @@ function writeAll(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-function stripPendingFlags(data) {
-  const clean = { nextId: data.nextId, people: {} };
-  for (const [id, person] of Object.entries(data.people)) {
-    const { pending, ...rest } = person;
-    clean.people[id] = rest;
+// Fetched once per page load (not persisted) — reloading the page always
+// re-fetches whatever is currently published, so "pending" stays honest
+// across deploys instead of relying on a flag someone could clear by
+// clicking Save without actually sending the email.
+let seedDataPromise = null;
+
+function loadSeedData() {
+  if (!seedDataPromise) {
+    seedDataPromise = fetch(SEED_URL)
+      .then((res) => (res.ok ? res.json() : { nextId: 1, people: {} }))
+      .catch(() => ({ nextId: 1, people: {} }));
   }
-  return clean;
+  return seedDataPromise;
+}
+
+export function ensureSeeded() {
+  if (readAll()) return Promise.resolve();
+  return loadSeedData().then((seed) => {
+    if (!readAll()) writeAll(seed);
+  });
+}
+
+const COMPARABLE_FIELDS = [
+  'firstName',
+  'lastName',
+  'gender',
+  'birthDate',
+  'deathDate',
+  'photoUrl',
+  'notes',
+  'parentIds',
+  'childrenIds',
+  'spouseIds',
+];
+
+function sameValue(a, b) {
+  if (Array.isArray(a) || Array.isArray(b)) {
+    const sa = [...(a || [])].sort();
+    const sb = [...(b || [])].sort();
+    return sa.length === sb.length && sa.every((v, i) => v === sb[i]);
+  }
+  return a === b;
+}
+
+// A person is "pending" if they don't exist in the published source yet,
+// or exist there but with different data — computed fresh, never stored.
+function isPending(person, sourcePerson) {
+  if (!sourcePerson) return true;
+  return COMPARABLE_FIELDS.some((field) => !sameValue(person[field], sourcePerson[field]));
 }
 
 // Opens a pre-filled email draft in the visitor's own mail client — there's
 // no backend on a static site to send this silently, so the visitor has to
 // hit send themselves. Large trees won't fit in a mailto body, so we fall
-// back to copying the JSON to the clipboard instead.
+// back to copying the JSON to the clipboard instead. Whether they actually
+// hit send is outside the page's visibility, so this never marks anything
+// as "saved" — that only happens once the published source itself changes.
 function notifyChange(data) {
   try {
-    const json = JSON.stringify(stripPendingFlags(data), null, 2);
+    const json = JSON.stringify(data, null, 2);
     const subject = encodeURIComponent('Roots family tree update');
     let body;
     if (json.length <= MAX_INLINE_JSON_LENGTH) {
@@ -48,41 +92,22 @@ function notifyChange(data) {
     link.href = `mailto:${NOTIFY_EMAIL}?subject=${subject}&body=${body}`;
     link.click();
   } catch {
-    // Best-effort only — never block a save on this.
+    // Best-effort only — never block anything on this.
   }
 }
 
-let seedPromise = null;
-
-export function ensureSeeded() {
-  if (readAll()) return Promise.resolve();
-  if (seedPromise) return seedPromise;
-
-  seedPromise = fetch(SEED_URL)
-    .then((res) => (res.ok ? res.json() : { nextId: 1, people: {} }))
-    .catch(() => ({ nextId: 1, people: {} }))
-    .then((seed) => {
-      if (!readAll()) writeAll(seed);
-    });
-
-  return seedPromise;
-}
-
-export function getAllPeople() {
+export async function getAllPeople() {
   const data = readAll() ?? { nextId: 1, people: {} };
-  return Object.values(data.people);
+  const seed = await loadSeedData();
+  return Object.values(data.people).map((person) => ({
+    ...person,
+    pending: isPending(person, seed.people[person.id]),
+  }));
 }
 
-// Sends the current state as an email (see notifyChange) and, on success,
-// clears every pending flag — the visitor explicitly chose to "save" now,
-// rather than us pushing an email draft on every single edit.
 export function saveAndNotify() {
   const data = readAll() ?? { nextId: 1, people: {} };
   notifyChange(data);
-  for (const person of Object.values(data.people)) {
-    person.pending = false;
-  }
-  writeAll(data);
 }
 
 export function createPerson(fields) {
@@ -100,7 +125,6 @@ export function createPerson(fields) {
     parentIds: [],
     childrenIds: [],
     spouseIds: [],
-    pending: true,
   };
   data.people[id] = person;
   writeAll(data);
@@ -120,7 +144,6 @@ export function updatePerson(id, fields) {
     parentIds: existing.parentIds,
     childrenIds: existing.childrenIds,
     spouseIds: existing.spouseIds,
-    pending: true,
   };
   data.people[id] = updated;
   writeAll(data);
@@ -158,8 +181,6 @@ export function addParentChild(parentId, childId) {
   const child = data.people[childId];
   if (!child.parentIds.includes(parentId)) child.parentIds.push(parentId);
   if (!parent.childrenIds.includes(childId)) parent.childrenIds.push(childId);
-  parent.pending = true;
-  child.pending = true;
   writeAll(data);
 }
 
@@ -169,8 +190,6 @@ export function removeParentChild(parentId, childId) {
   assertExists(data, childId);
   data.people[parentId].childrenIds = data.people[parentId].childrenIds.filter((id) => id !== childId);
   data.people[childId].parentIds = data.people[childId].parentIds.filter((id) => id !== parentId);
-  data.people[parentId].pending = true;
-  data.people[childId].pending = true;
   writeAll(data);
 }
 
@@ -185,8 +204,6 @@ export function addSpouses(person1Id, person2Id) {
   const p2 = data.people[person2Id];
   if (!p1.spouseIds.includes(person2Id)) p1.spouseIds.push(person2Id);
   if (!p2.spouseIds.includes(person1Id)) p2.spouseIds.push(person1Id);
-  p1.pending = true;
-  p2.pending = true;
   writeAll(data);
 }
 
@@ -196,11 +213,9 @@ export function removeSpouses(person1Id, person2Id) {
   assertExists(data, person2Id);
   data.people[person1Id].spouseIds = data.people[person1Id].spouseIds.filter((id) => id !== person2Id);
   data.people[person2Id].spouseIds = data.people[person2Id].spouseIds.filter((id) => id !== person1Id);
-  data.people[person1Id].pending = true;
-  data.people[person2Id].pending = true;
   writeAll(data);
 }
 
 export function exportRaw() {
-  return stripPendingFlags(readAll() ?? { nextId: 1, people: {} });
+  return readAll() ?? { nextId: 1, people: {} };
 }
