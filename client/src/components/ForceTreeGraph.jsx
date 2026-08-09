@@ -5,9 +5,10 @@ const NODE_RADIUS = 26;
 const LEVEL_HEIGHT = 150;
 const MARGIN = 80;
 
-// A 5-pointed star polygon, centered on (0, 0), for the person nodes —
-// so they read as stars rather than plain circles ("planets").
-function starPoints(outerRadius, innerRadius, spikes = 5) {
+// A thin 4-point sparkle/twinkle polygon (like a lens-flare star), centered
+// on (0, 0) — reads as an actual star far better than a chunky 5-point
+// badge shape does.
+function starPoints(outerRadius, innerRadius, spikes = 4) {
   const points = [];
   const step = Math.PI / spikes;
   for (let i = 0; i < spikes * 2; i++) {
@@ -176,20 +177,25 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
         onSelect(d.id);
       });
 
-    // Invisible circle so the whole disc (including the star's concave
+    // Invisible circle so the whole disc (including the sparkle's concave
     // notches) stays clickable/draggable, not just the painted points.
     nodeSel.append('circle').attr('class', 'ft-graph-node-hit').attr('r', NODE_RADIUS);
 
-    nodeSel
-      .append('polygon')
-      .attr('class', 'ft-graph-node-glow')
-      .attr('points', starPoints(NODE_RADIUS * 1.9, NODE_RADIUS * 0.85));
+    // A soft ambient halo around the bright center...
+    nodeSel.append('circle').attr('class', 'ft-graph-node-glow').attr('r', NODE_RADIUS * 0.7);
 
+    // ...thin radiating sparkle points, like a lens-flare star...
     nodeSel
       .append('polygon')
-      .attr('class', 'ft-graph-node-core')
-      .attr('points', starPoints(NODE_RADIUS, NODE_RADIUS * 0.45))
+      .attr('class', 'ft-graph-node-sparkle')
+      .attr('points', starPoints(NODE_RADIUS, NODE_RADIUS * 0.16))
       .attr('style', () => `animation-delay: ${(Math.random() * 4).toFixed(2)}s`);
+
+    // ...and a small bright disc on top, where the points converge.
+    nodeSel
+      .append('circle')
+      .attr('class', 'ft-graph-node-core')
+      .attr('r', NODE_RADIUS * 0.36);
 
     nodeSel
       .append('text')

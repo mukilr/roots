@@ -114,7 +114,11 @@ export default function App() {
         {error && <div className="ft-error-banner">{error}</div>}
 
         {loading ? (
-          <div className="ft-empty">Loading…</div>
+          <div className="ft-loading">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2 L14.4 9.2 L22 9.5 L15.9 14.3 L18.1 22 L12 17.3 L5.9 22 L8.1 14.3 L2 9.5 L9.6 9.2 Z" />
+            </svg>
+          </div>
         ) : (
           <ForceTreeGraph people={people} selectedId={selectedId} onSelect={handleSelect} />
         )}

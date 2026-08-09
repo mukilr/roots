@@ -209,6 +209,35 @@ body {
   font-size: 14px;
 }
 
+.ft-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ft-loading svg {
+  width: 28px;
+  height: 28px;
+  color: #ffffff;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 14px rgba(180, 160, 255, 0.6));
+  animation: ft-loading-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes ft-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
 .ft-form h3,
 .ft-details h3 {
   margin: 0 0 10px;
@@ -434,65 +463,77 @@ body {
 
 .ft-graph-node-glow {
   stroke: none;
-  opacity: 0.35;
-  filter: blur(6px);
+  opacity: 0.45;
+  filter: blur(7px);
   pointer-events: none;
 }
 
-.ft-graph-node-core {
-  stroke: rgba(255, 255, 255, 0.5);
-  stroke-width: 1px;
+.ft-graph-node-sparkle {
+  stroke: none;
+  pointer-events: none;
   animation: ft-node-twinkle 3.2s ease-in-out infinite;
+}
+
+.ft-graph-node-core {
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 0.5px;
+  pointer-events: none;
 }
 
 @keyframes ft-node-twinkle {
   0%,
   100% {
-    filter: brightness(1);
+    filter: brightness(1) drop-shadow(0 0 1px rgba(255, 255, 255, 0.4));
   }
   50% {
-    filter: brightness(1.25);
+    filter: brightness(1.4) drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
   }
 }
 
-.ft-graph-node.male .ft-graph-node-core {
+.ft-graph-node.male .ft-graph-node-core,
+.ft-graph-node.male .ft-graph-node-sparkle {
   fill: #bfe0ff;
 }
 .ft-graph-node.male .ft-graph-node-glow {
   fill: #4f9dff;
 }
 
-.ft-graph-node.female .ft-graph-node-core {
+.ft-graph-node.female .ft-graph-node-core,
+.ft-graph-node.female .ft-graph-node-sparkle {
   fill: #ffd3ec;
 }
 .ft-graph-node.female .ft-graph-node-glow {
   fill: #ff6fb0;
 }
 
-.ft-graph-node.unspecified .ft-graph-node-core {
+.ft-graph-node.unspecified .ft-graph-node-core,
+.ft-graph-node.unspecified .ft-graph-node-sparkle {
   fill: #e4e4f2;
 }
 .ft-graph-node.unspecified .ft-graph-node-glow {
   fill: #ffffff;
 }
 
-.ft-graph-node.is-ancestor .ft-graph-node-core {
+.ft-graph-node.is-ancestor .ft-graph-node-core,
+.ft-graph-node.is-ancestor .ft-graph-node-sparkle {
   fill: #fff3c4;
+}
+.ft-graph-node.is-ancestor .ft-graph-node-core {
   stroke: #ffe27a;
-  stroke-width: 1.5px;
+  stroke-width: 1px;
 }
 .ft-graph-node.is-ancestor .ft-graph-node-glow {
   fill: #ffd23f;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .ft-graph-node.is-selected .ft-graph-node-core {
   stroke: #ffffff;
-  stroke-width: 2.5px;
+  stroke-width: 2px;
 }
 .ft-graph-node.is-selected .ft-graph-node-glow {
   fill: #ffffff;
-  opacity: 0.55;
+  opacity: 0.65;
 }
 
 .ft-graph-name {
