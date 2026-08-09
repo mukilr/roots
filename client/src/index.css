@@ -141,10 +141,6 @@ body {
   line-height: 1;
 }
 
-.ft-modal .ft-form h3 {
-  display: none;
-}
-
 .ft-empty {
   padding: 40px;
   color: #9a97c9;
@@ -265,6 +261,70 @@ body {
 
 .ft-details p {
   margin: 4px 0;
+}
+
+.ft-rel-group {
+  margin-top: 14px;
+}
+
+.ft-rel-group h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.ft-rel-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.ft-rel-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ft-rel-group li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 0;
+  font-size: 13px;
+}
+
+.ft-rel-group li button {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 3px;
+  font-size: 11px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.ft-details .ft-form {
+  margin-top: 16px;
+}
+
+.ft-danger {
+  margin-top: 16px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #e0a0a0;
+  border-radius: 4px;
+  background: #fff5f5;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ft-danger:hover {
+  background: #ffe8e8;
 }
 
 /* --- D3 force-directed tree --- */

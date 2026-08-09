@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const EMPTY = { firstName: '', lastName: '', gender: 'male', birthDate: '', deathDate: '', notes: '' };
 
-export function PersonForm({ onCreate, onSuccess }) {
+export function PersonForm({ onCreate, onSuccess, showHeading = true }) {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -35,7 +35,7 @@ export function PersonForm({ onCreate, onSuccess }) {
 
   return (
     <form className="ft-form" onSubmit={submit}>
-      <h3>Add person</h3>
+      {showHeading && <h3>Add person</h3>}
       <div className="ft-form-row">
         <input placeholder="First name" value={form.firstName} onChange={update('firstName')} required />
         <input placeholder="Last name" value={form.lastName} onChange={update('lastName')} />

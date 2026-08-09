@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from './api.js';
 import { ForceTreeGraph } from './components/ForceTreeGraph.jsx';
 import { PersonForm } from './components/PersonForm.jsx';
-import { RelationshipForm } from './components/RelationshipForm.jsx';
 import { PersonList } from './components/PersonList.jsx';
 import { Modal } from './components/Modal.jsx';
+import { PersonDetailModal } from './components/PersonDetailModal.jsx';
 
 export default function App() {
   const [people, setPeople] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [detailPersonId, setDetailPersonId] = useState(null);
   const [focusId, setFocusId] = useState(null);
   const [focusNonce, setFocusNonce] = useState(0);
   const [error, setError] = useState(null);
@@ -16,7 +17,7 @@ export default function App() {
   const [showAddPerson, setShowAddPerson] = useState(false);
 
   const peopleById = useMemo(() => Object.fromEntries(people.map((p) => [p.id, p])), [people]);
-  const selectedPerson = selectedId ? peopleById[selectedId] : null;
+  const detailPerson = detailPersonId ? peopleById[detailPersonId] : null;
 
   const refresh = useCallback(async () => {
     try {
@@ -44,10 +45,16 @@ export default function App() {
     await refresh();
   };
 
+  const handleUnlink = async (type, person1Id, person2Id) => {
+    await api.removeRelationship(type, person1Id, person2Id);
+    await refresh();
+  };
+
   const handleDelete = async (id) => {
     if (!confirm('Delete this person? This removes them from all relationships.')) return;
     await api.deletePerson(id);
     if (selectedId === id) setSelectedId(null);
+    if (detailPersonId === id) setDetailPersonId(null);
     await refresh();
   };
 
@@ -60,6 +67,13 @@ export default function App() {
     a.download = 'family-tree.json';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Clicking a star (or a name in the sidebar) opens that person's detail —
+  // relationships are managed from there now, not a separate sidebar form.
+  const handleSelect = (id) => {
+    setSelectedId(id);
+    setDetailPersonId(id);
   };
 
   const handleFocus = (id) => {
@@ -76,28 +90,13 @@ export default function App() {
       </header>
 
       <aside className="ft-sidebar">
-        <RelationshipForm people={people} onLink={handleLink} />
         <PersonList
           people={people}
           selectedId={selectedId}
           onFocus={handleFocus}
-          onSelect={setSelectedId}
+          onSelect={handleSelect}
           onDelete={handleDelete}
         />
-        {selectedPerson && (
-          <div className="ft-details">
-            <h3>
-              {selectedPerson.firstName} {selectedPerson.lastName}
-            </h3>
-            <p>Gender: {selectedPerson.gender}</p>
-            {selectedPerson.birthDate && <p>Born: {selectedPerson.birthDate}</p>}
-            {selectedPerson.deathDate && <p>Died: {selectedPerson.deathDate}</p>}
-            {selectedPerson.notes && <p>{selectedPerson.notes}</p>}
-            {selectedPerson.pending && (
-              <p className="ft-pending-note">⏳ Not yet emailed — saved in this browser only.</p>
-            )}
-          </div>
-        )}
         {error && <div className="ft-error">{error}</div>}
       </aside>
 
@@ -111,7 +110,7 @@ export default function App() {
           <ForceTreeGraph
             people={people}
             selectedId={selectedId}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
             focusId={focusId}
             focusNonce={focusNonce}
           />
@@ -120,8 +119,20 @@ export default function App() {
 
       {showAddPerson && (
         <Modal title="Add person" onClose={() => setShowAddPerson(false)}>
-          <PersonForm onCreate={handleCreate} onSuccess={() => setShowAddPerson(false)} />
+          <PersonForm onCreate={handleCreate} onSuccess={() => setShowAddPerson(false)} showHeading={false} />
         </Modal>
+      )}
+
+      {detailPerson && (
+        <PersonDetailModal
+          person={detailPerson}
+          peopleById={peopleById}
+          otherPeople={people.filter((p) => p.id !== detailPerson.id)}
+          onClose={() => setDetailPersonId(null)}
+          onLink={handleLink}
+          onUnlink={handleUnlink}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   );
