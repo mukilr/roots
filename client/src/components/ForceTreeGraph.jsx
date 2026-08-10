@@ -131,7 +131,13 @@ function buildGraph(people) {
       const key = [p.id, spouseId].sort().join('::');
       if (seenSpousePairs.has(key)) continue;
       seenSpousePairs.add(key);
-      links.push({ source: p.id, target: spouseId, type: 'spouse' });
+      // A satellite's position is fully hand-managed each tick (see the
+      // simulation's tick handler below) — leaving this link in the normal
+      // force physics would fight that override every tick (the link wants
+      // ~80px apart, the override holds them ~40px apart) and fling the
+      // primary around. Still drawn, just not simulated.
+      const physicsExempt = Boolean(satelliteOf.get(p.id) || satelliteOf.get(spouseId));
+      links.push({ source: p.id, target: spouseId, type: 'spouse', physicsExempt });
     }
   }
 
@@ -286,12 +292,16 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
           .forceLink(links)
           .id((d) => d.id)
           .distance((d) => (d.type === 'spouse' ? 80 : 110))
-          .strength((d) => (d.type === 'spouse' ? 0.8 : 0.25))
+          .strength((d) => (d.physicsExempt ? 0 : d.type === 'spouse' ? 0.8 : 0.25))
       )
-      .force('charge', d3.forceManyBody().strength((d) => (d.satelliteOf ? -40 : -260)))
+      .force('charge', d3.forceManyBody().strength((d) => (d.satelliteOf ? -20 : -260)))
       .force(
         'collide',
-        d3.forceCollide((d) => (d.satelliteOf ? nodeRadius(d) + 14 : NODE_RADIUS + 40))
+        // Satellites are excluded from collision entirely (radius ~0) —
+        // their position is hand-managed every tick, so letting collision
+        // "resolve" the deliberate overlap with their primary just means
+        // the two forces fight each other and fling the primary away.
+        d3.forceCollide((d) => (d.satelliteOf ? 0.1 : NODE_RADIUS + 40))
       )
       .force('x', d3.forceX(width / 2).strength(0.03))
       .force('y', d3.forceY(targetY).strength(1))
