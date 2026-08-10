@@ -153,6 +153,38 @@ body {
   font-size: 13px;
 }
 
+.ft-focus-banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(120, 90, 220, 0.25);
+  border: 1px solid rgba(180, 160, 255, 0.4);
+  backdrop-filter: blur(4px);
+  color: #f3f2ff;
+  padding: 6px 8px 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.ft-focus-banner button {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #f3f2ff;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ft-focus-banner button:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
 .ft-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -398,6 +430,27 @@ body {
 
 .ft-details .ft-form {
   margin-top: 16px;
+}
+
+.ft-focus-btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid rgba(180, 160, 255, 0.5);
+  border-radius: 4px;
+  background: rgba(120, 90, 220, 0.18);
+  color: #f3f2ff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ft-focus-btn:hover:not(:disabled) {
+  background: rgba(120, 90, 220, 0.3);
+}
+
+.ft-focus-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 .ft-danger {

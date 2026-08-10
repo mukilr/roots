@@ -5,6 +5,50 @@ import { PersonForm } from './components/PersonForm.jsx';
 import { Modal } from './components/Modal.jsx';
 import { PersonDetailModal } from './components/PersonDetailModal.jsx';
 
+// A focused family is one ancestor plus every direct descendant, recursively
+// — spouses are included (so couples still render together) but a spouse's
+// own side of the family is never expanded past them.
+function computeFocusedFamily(rootId, peopleById) {
+  const visible = new Set();
+  const queue = [rootId];
+  while (queue.length) {
+    const id = queue.shift();
+    if (visible.has(id) || !peopleById[id]) continue;
+    visible.add(id);
+    const person = peopleById[id];
+    for (const childId of person.childrenIds) {
+      if (!visible.has(childId)) queue.push(childId);
+    }
+    for (const spouseId of person.spouseIds) {
+      visible.add(spouseId);
+    }
+  }
+  return visible;
+}
+
+function computeUnionFocusedSet(rootIds, peopleById) {
+  const set = new Set();
+  for (const rootId of rootIds) {
+    for (const id of computeFocusedFamily(rootId, peopleById)) set.add(id);
+  }
+  return set;
+}
+
+// Walks up the blood line (via the first recorded parent) to find the
+// ancestor at the top of this person's family — used to pull in "the other
+// family" when a spouse link crosses into it.
+function findFamilyRoot(personId, peopleById) {
+  let current = peopleById[personId];
+  const seen = new Set();
+  while (current && current.parentIds.length > 0 && !seen.has(current.id)) {
+    seen.add(current.id);
+    const parent = peopleById[current.parentIds[0]];
+    if (!parent) break;
+    current = parent;
+  }
+  return current ? current.id : personId;
+}
+
 export default function App() {
   const [people, setPeople] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -12,10 +56,18 @@ export default function App() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddPerson, setShowAddPerson] = useState(false);
+  const [focusedRootIds, setFocusedRootIds] = useState([]);
 
   const peopleById = useMemo(() => Object.fromEntries(people.map((p) => [p.id, p])), [people]);
   const detailPerson = detailPersonId ? peopleById[detailPersonId] : null;
   const hasPending = people.some((p) => p.pending);
+
+  const focusedSet = useMemo(
+    () => (focusedRootIds.length > 0 ? computeUnionFocusedSet(focusedRootIds, peopleById) : null),
+    [focusedRootIds, peopleById]
+  );
+  const focusedRoots = focusedRootIds.map((id) => peopleById[id]).filter(Boolean);
+  const visiblePeople = focusedSet ? people.filter((p) => focusedSet.has(p.id)) : people;
 
   const refresh = useCallback(async () => {
     try {
@@ -40,6 +92,27 @@ export default function App() {
   };
 
   const handleLink = async (type, person1Id, person2Id) => {
+    // Spouses aren't descendants, so linking one in doesn't naturally belong
+    // to the currently focused family/families. If the other person is
+    // already established elsewhere (has other relationships) and isn't
+    // part of what's focused, pull their whole family in too, so both sides
+    // display together, joined by this new link. A brand-new, blank person
+    // becoming a satellite doesn't need this (nothing "outside" about them
+    // yet). Checked against a fresh snapshot rather than possibly-stale
+    // state, since this can run right after a create-and-link in one go.
+    if (type === 'spouse' && focusedRootIds.length > 0) {
+      const freshPeople = await api.getPeople();
+      const freshById = Object.fromEntries(freshPeople.map((p) => [p.id, p]));
+      const freshFocusedSet = computeUnionFocusedSet(focusedRootIds, freshById);
+      const otherId = freshFocusedSet.has(person1Id) ? person2Id : person1Id;
+      const other = freshById[otherId];
+      const hadPriorConnections =
+        other && (other.parentIds.length > 0 || other.childrenIds.length > 0 || other.spouseIds.length > 0);
+      if (!freshFocusedSet.has(otherId) && hadPriorConnections) {
+        const otherRootId = findFamilyRoot(otherId, freshById);
+        setFocusedRootIds((prev) => (prev.includes(otherRootId) ? prev : [...prev, otherRootId]));
+      }
+    }
     await api.addRelationship(type, person1Id, person2Id);
     await refresh();
   };
@@ -54,6 +127,7 @@ export default function App() {
     await api.deletePerson(id);
     if (selectedId === id) setSelectedId(null);
     if (detailPersonId === id) setDetailPersonId(null);
+    if (focusedRootIds.includes(id)) setFocusedRootIds((prev) => prev.filter((rid) => rid !== id));
     await refresh();
   };
 
@@ -78,6 +152,11 @@ export default function App() {
   const handleSave = async () => {
     await api.save();
     await refresh();
+  };
+
+  const handleFocusFamily = (id) => {
+    setFocusedRootIds([id]);
+    setDetailPersonId(null);
   };
 
   return (
@@ -114,6 +193,15 @@ export default function App() {
         </button>
       </div>
 
+      {focusedRoots.length > 0 && (
+        <div className="ft-focus-banner">
+          Focused on {focusedRoots.map((r) => `${r.firstName}'s family`).join(' + ')}
+          <button type="button" onClick={() => setFocusedRootIds([])}>
+            Show all
+          </button>
+        </div>
+      )}
+
       {error && <div className="ft-error-banner">{error}</div>}
 
       <main className="ft-canvas">
@@ -124,7 +212,7 @@ export default function App() {
             </svg>
           </div>
         ) : (
-          <ForceTreeGraph people={people} selectedId={selectedId} onSelect={handleSelect} />
+          <ForceTreeGraph people={visiblePeople} selectedId={selectedId} onSelect={handleSelect} />
         )}
       </main>
 
@@ -149,6 +237,8 @@ export default function App() {
           onLink={handleLink}
           onUnlink={handleUnlink}
           onDelete={handleDelete}
+          onFocusFamily={handleFocusFamily}
+          isFocused={focusedRootIds.includes(detailPerson.id)}
         />
       )}
     </div>

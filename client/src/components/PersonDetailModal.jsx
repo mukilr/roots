@@ -3,7 +3,17 @@ import { Modal } from './Modal.jsx';
 
 const label = (p) => (p ? `${p.firstName} ${p.lastName}`.trim() || `#${p.id}` : 'Unknown');
 
-export function PersonDetailModal({ person, peopleById, otherPeople, onClose, onLink, onUnlink, onDelete }) {
+export function PersonDetailModal({
+  person,
+  peopleById,
+  otherPeople,
+  onClose,
+  onLink,
+  onUnlink,
+  onDelete,
+  onFocusFamily,
+  isFocused,
+}) {
   const [relType, setRelType] = useState('parent');
   const [otherId, setOtherId] = useState('');
   const [error, setError] = useState(null);
@@ -48,6 +58,15 @@ export function PersonDetailModal({ person, peopleById, otherPeople, onClose, on
             Not yet emailed — saved in this browser only.
           </p>
         )}
+
+        <button
+          type="button"
+          className="ft-focus-btn"
+          onClick={() => onFocusFamily(person.id)}
+          disabled={isFocused}
+        >
+          {isFocused ? 'Currently focused on this family' : 'Focus this family'}
+        </button>
 
         {relGroups.map(({ title, ids, unlink }) => (
           <div key={title} className="ft-rel-group">
