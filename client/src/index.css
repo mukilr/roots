@@ -16,7 +16,10 @@ body {
 .ft-app {
   height: 100vh;
   width: 100vw;
-  overflow: hidden;
+  /* No overflow:hidden here — the fixed-position title/buttons are direct
+     children of this element, and an overflow:hidden ancestor is what
+     breaks position:fixed on iOS Safari (see App.jsx). .ft-canvas below
+     still clips the SVG content on its own. */
 }
 
 .ft-canvas {
@@ -139,7 +142,7 @@ body {
 }
 
 .ft-error-banner {
-  position: absolute;
+  position: fixed;
   bottom: 20px;
   left: 24px;
   z-index: 5;

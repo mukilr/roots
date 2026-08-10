@@ -82,37 +82,41 @@ export default function App() {
 
   return (
     <div className="ft-app">
+      {/* Fixed-position UI lives outside .ft-canvas's overflow:hidden box —
+          nesting position:fixed elements inside overflow:hidden ancestors is
+          a known iOS Safari bug where they get clipped/lost instead of
+          staying pinned to the real viewport. */}
+      <h1 className="ft-title">Roots</h1>
+
+      <div className="ft-canvas-actions">
+        <button
+          className="ft-save-fab"
+          onClick={handleSave}
+          disabled={!hasPending}
+          title={hasPending ? 'Save — email the update to mukilr' : 'No unsaved changes'}
+          aria-label="Save and email update"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 4h13l3 3v13H4z" />
+            <path d="M8 4v6h8V4" />
+            <path d="M8 20v-6h8v6" />
+          </svg>
+        </button>
+        <button className="ft-add-fab" onClick={() => setShowAddPerson(true)} title="Add person" aria-label="Add person">
+          +
+        </button>
+        <button className="ft-download-fab" onClick={handleExport} title="Download JSON" aria-label="Download JSON">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 3v12" />
+            <path d="M7 10l5 5 5-5" />
+            <path d="M4 21h16" />
+          </svg>
+        </button>
+      </div>
+
+      {error && <div className="ft-error-banner">{error}</div>}
+
       <main className="ft-canvas">
-        <h1 className="ft-title">Roots</h1>
-
-        <div className="ft-canvas-actions">
-          <button
-            className="ft-save-fab"
-            onClick={handleSave}
-            disabled={!hasPending}
-            title={hasPending ? 'Save — email the update to mukilr' : 'No unsaved changes'}
-            aria-label="Save and email update"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 4h13l3 3v13H4z" />
-              <path d="M8 4v6h8V4" />
-              <path d="M8 20v-6h8v6" />
-            </svg>
-          </button>
-          <button className="ft-add-fab" onClick={() => setShowAddPerson(true)} title="Add person" aria-label="Add person">
-            +
-          </button>
-          <button className="ft-download-fab" onClick={handleExport} title="Download JSON" aria-label="Download JSON">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 3v12" />
-              <path d="M7 10l5 5 5-5" />
-              <path d="M4 21h16" />
-            </svg>
-          </button>
-        </div>
-
-        {error && <div className="ft-error-banner">{error}</div>}
-
         {loading ? (
           <div className="ft-loading">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
