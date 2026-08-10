@@ -2,8 +2,15 @@ import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 const NODE_RADIUS = 26;
+const SATELLITE_SCALE = 0.6;
+const SATELLITE_OFFSET_X = NODE_RADIUS * 1.35;
+const SATELLITE_OFFSET_Y = -NODE_RADIUS * 0.85;
 const LEVEL_HEIGHT = 150;
 const MARGIN = 80;
+
+function nodeRadius(d) {
+  return d.satelliteOf ? NODE_RADIUS * SATELLITE_SCALE : NODE_RADIUS;
+}
 
 // A thin 4-point sparkle/twinkle polygon (like a lens-flare star), centered
 // on (0, 0) — reads as an actual star far better than a chunky 5-point
@@ -72,8 +79,34 @@ function computeGenerations(people) {
   return generation;
 }
 
+// A spouse with no blood lineage of their own (no recorded parents) who
+// married into someone who does have one becomes a small "satellite" star —
+// it hovers right next to its partner and tracks their position exactly,
+// rather than taking an independent place in the generational layout. A
+// founding couple (neither has parents on file) stays as two full,
+// independent stars.
+function computeSpouseSatellites(people) {
+  const byId = new Map(people.map((p) => [p.id, p]));
+  const satelliteOf = new Map();
+
+  for (const p of people) {
+    if (p.parentIds.length > 0) continue;
+    if (satelliteOf.has(p.id)) continue;
+
+    const anchorSpouseId = p.spouseIds.find((sid) => {
+      const spouse = byId.get(sid);
+      return spouse && spouse.parentIds.length > 0 && !satelliteOf.has(sid);
+    });
+
+    if (anchorSpouseId) satelliteOf.set(p.id, anchorSpouseId);
+  }
+
+  return satelliteOf;
+}
+
 function buildGraph(people) {
   const generation = computeGenerations(people);
+  const satelliteOf = computeSpouseSatellites(people);
   const maxGeneration = Math.max(0, ...[...generation.values()]);
 
   const nodes = people.map((p) => ({
@@ -85,6 +118,7 @@ function buildGraph(people) {
     deathDate: p.deathDate,
     pending: Boolean(p.pending),
     generation: generation.get(p.id),
+    satelliteOf: satelliteOf.get(p.id) || null,
   }));
 
   const links = [];
@@ -116,6 +150,7 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
     if (people.length === 0) return undefined;
 
     const { nodes, links, maxGeneration } = buildGraph(people);
+    const nodeById = new Map(nodes.map((d) => [d.id, d]));
     const width = Math.max(container.clientWidth, nodes.length * 90, 800);
     const height = Math.max(container.clientHeight, (maxGeneration + 1) * LEVEL_HEIGHT + MARGIN * 2, 500);
 
@@ -170,7 +205,7 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
       .attr(
         'class',
         (d) =>
-          `ft-graph-node ${d.gender || 'unspecified'}${d.generation === 0 ? ' is-ancestor' : ''}${d.pending ? ' is-pending' : ''}`
+          `ft-graph-node ${d.gender || 'unspecified'}${d.generation === 0 ? ' is-ancestor' : ''}${d.pending ? ' is-pending' : ''}${d.satelliteOf ? ' is-satellite' : ''}`
       )
       .on('click', (event, d) => {
         event.stopPropagation();
@@ -179,29 +214,32 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
 
     // Invisible circle so the whole disc (including the sparkle's concave
     // notches) stays clickable/draggable, not just the painted points.
-    nodeSel.append('circle').attr('class', 'ft-graph-node-hit').attr('r', NODE_RADIUS);
+    nodeSel.append('circle').attr('class', 'ft-graph-node-hit').attr('r', nodeRadius);
 
     // A soft ambient halo around the bright center...
-    nodeSel.append('circle').attr('class', 'ft-graph-node-glow').attr('r', NODE_RADIUS * 0.7);
+    nodeSel
+      .append('circle')
+      .attr('class', 'ft-graph-node-glow')
+      .attr('r', (d) => nodeRadius(d) * 0.7);
 
     // ...thin radiating sparkle points, like a lens-flare star...
     nodeSel
       .append('polygon')
       .attr('class', 'ft-graph-node-sparkle')
-      .attr('points', starPoints(NODE_RADIUS, NODE_RADIUS * 0.16))
+      .attr('points', (d) => starPoints(nodeRadius(d), nodeRadius(d) * 0.16))
       .attr('style', () => `animation-delay: ${(Math.random() * 4).toFixed(2)}s`);
 
     // ...and a small bright disc on top, where the points converge.
     nodeSel
       .append('circle')
       .attr('class', 'ft-graph-node-core')
-      .attr('r', NODE_RADIUS * 0.36);
+      .attr('r', (d) => nodeRadius(d) * 0.36);
 
     // A pulsing "ping" dot marks unsaved nodes — no emoji, just motion.
     const pendingBadge = nodeSel
       .append('g')
       .attr('class', 'ft-graph-pending-badge')
-      .attr('transform', `translate(${NODE_RADIUS - 4}, ${-NODE_RADIUS + 6})`);
+      .attr('transform', (d) => `translate(${nodeRadius(d) - 4}, ${-nodeRadius(d) + 6})`);
     pendingBadge.append('circle').attr('class', 'ft-pending-ping').attr('r', 5);
     pendingBadge.append('circle').attr('class', 'ft-pending-dot').attr('r', 4);
 
@@ -209,7 +247,7 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
       .append('text')
       .attr('class', 'ft-graph-name')
       .attr('text-anchor', 'start')
-      .attr('x', NODE_RADIUS + 10)
+      .attr('x', (d) => nodeRadius(d) + 10)
       .attr('dy', '0.35em')
       .text((d) => d.firstName || 'Unnamed');
 
@@ -229,7 +267,9 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
       .on('end', (event, d) => {
         if (!event.active) simulation.alphaTarget(0);
       });
-    nodeSel.call(drag);
+    // Satellites don't get their own drag handle — they just follow their
+    // partner, so only independent nodes are draggable.
+    nodeSel.filter((d) => !d.satelliteOf).call(drag);
     nodeSel.on('dblclick', (event, d) => {
       event.stopPropagation();
       d.fx = null;
@@ -248,11 +288,26 @@ export function ForceTreeGraph({ people, selectedId, onSelect }) {
           .distance((d) => (d.type === 'spouse' ? 80 : 110))
           .strength((d) => (d.type === 'spouse' ? 0.8 : 0.25))
       )
-      .force('charge', d3.forceManyBody().strength(-260))
-      .force('collide', d3.forceCollide(NODE_RADIUS + 40))
+      .force('charge', d3.forceManyBody().strength((d) => (d.satelliteOf ? -40 : -260)))
+      .force(
+        'collide',
+        d3.forceCollide((d) => (d.satelliteOf ? nodeRadius(d) + 14 : NODE_RADIUS + 40))
+      )
       .force('x', d3.forceX(width / 2).strength(0.03))
       .force('y', d3.forceY(targetY).strength(1))
       .on('tick', () => {
+        // Satellites hover at a fixed offset from their partner and just
+        // track them, rather than settling wherever the physics put them.
+        for (const d of nodes) {
+          if (!d.satelliteOf) continue;
+          const primary = nodeById.get(d.satelliteOf);
+          if (!primary) continue;
+          d.x = primary.x + SATELLITE_OFFSET_X;
+          d.y = primary.y + SATELLITE_OFFSET_Y;
+          d.vx = 0;
+          d.vy = 0;
+        }
+
         nodeSel.attr('transform', (d) => `translate(${d.x},${d.y})`);
         linkSel
           .attr('x1', (d) => d.source.x)
