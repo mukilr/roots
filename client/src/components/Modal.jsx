@@ -6,7 +6,17 @@ export function Modal({ title, onClose, children }) {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      // Submitting a form dismisses the on-screen keyboard at the same
+      // moment this modal unmounts. iOS Safari can leave position:fixed
+      // siblings (the title/action buttons) mispositioned relative to the
+      // visual viewport when that happens together — force a clean state.
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      window.scrollTo(0, 0);
+    };
   }, [onClose]);
 
   return (
